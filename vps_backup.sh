@@ -147,22 +147,23 @@ else
 fi
 
 # Clean up old backups - keep only the last n backups in /backups
-# List all directories in /backups (excluding /backups itself), sorted by modification time
+# List all items (directories and .tar.gz files) in /backups, sorted by modification time
+# This handles both subdirectory-based backups (default) and direct .tar.gz backups (--outdir /backups)
 echo "Checking for old backups to clean up..."
-backup_dirs=($(sudo find /backups -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-))
+backup_items=($(sudo find /backups -mindepth 1 -maxdepth 1 \( -type d -o -name '*.tar.gz' \) -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-))
 
-if [[ ${#backup_dirs[@]} -gt $keep_n ]]; then
-    echo "Found ${#backup_dirs[@]} backups, keeping last $keep_n..."
+if [[ ${#backup_items[@]} -gt $keep_n ]]; then
+    echo "Found ${#backup_items[@]} backups, keeping last $keep_n..."
     # Remove backups beyond keep_n (arrays in zsh are 1-indexed by default)
-    for ((i=$((keep_n+1)); i<=${#backup_dirs[@]}; i++)); do
-        old_backup="${backup_dirs[$i]}"
+    for ((i=$((keep_n+1)); i<=${#backup_items[@]}; i++)); do
+        old_backup="${backup_items[$i]}"
         echo "Removing old backup: $old_backup"
         sudo rm -rf "$old_backup" || {
             echo "Warning: Failed to remove $old_backup" >&2
         }
     done
 else
-    echo "Found ${#backup_dirs[@]} backups, no cleanup needed (keeping last $keep_n)"
+    echo "Found ${#backup_items[@]} backups, no cleanup needed (keeping last $keep_n)"
 fi
 
 echo "Backup complete: $outdir"
