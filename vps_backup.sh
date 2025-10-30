@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # Backup script - creates compressed tar backups of specified directories
-# Usage: backup.sh [--keep-n N] [--outdir DIR] dir1 [dir2 ...]
+# Usage: vps_backup.sh [--keep-n N] [--outdir DIR] dir1 [dir2 ...]
 
 # Check for sudo access early - required for creating /backups and writing to it
 if ! sudo -v; then

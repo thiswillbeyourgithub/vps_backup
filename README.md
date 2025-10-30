@@ -1,4 +1,4 @@
-# backup.sh
+# vps_vps_backup.sh
 
 A quick and dirty backup script for saving my VPS. Creates compressed tar backups of specified directories with automatic rotation to save disk space.
 
@@ -23,25 +23,25 @@ A quick and dirty backup script for saving my VPS. Creates compressed tar backup
 Basic usage - backup directories with default settings (keeps last 2 backups):
 
 ```bash
-sudo ./backup.sh /home/user /etc /var/www
+sudo ./vps_backup.sh /home/user /etc /var/www
 ```
 
 Specify how many backups to keep:
 
 ```bash
-sudo ./backup.sh --keep-n 5 /home/user /etc
+sudo ./vps_backup.sh --keep-n 5 /home/user /etc
 ```
 
 Specify a custom output directory:
 
 ```bash
-sudo ./backup.sh --outdir /custom/backup/location /home/user /etc
+sudo ./vps_backup.sh --outdir /custom/backup/location /home/user /etc
 ```
 
 Combine options:
 
 ```bash
-sudo ./backup.sh --keep-n 3 --outdir /mnt/external/backups /home/user /etc /var/www
+sudo ./vps_backup.sh --keep-n 3 --outdir /mnt/external/backups /home/user /etc /var/www
 ```
 
 ## Default Behavior
