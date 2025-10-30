@@ -84,29 +84,21 @@ sudo mkdir -p "$outdir" || {
     exit 1
 }
 
-# Filter out non-existent directories
-valid_dirs=()
+# Validate that all directories exist - crash if any directory is missing
 for dir in "${directories[@]}"; do
     if [[ ! -d "$dir" ]]; then
-        echo "Warning: Directory '$dir' does not exist, skipping..." >&2
-    else
-        valid_dirs+=("$dir")
+        echo "Error: Directory '$dir' does not exist" >&2
+        exit 1
     fi
 done
-
-# Check if we have any valid directories to backup
-if [[ ${#valid_dirs[@]} -eq 0 ]]; then
-    echo "Error: No valid directories to backup" >&2
-    exit 1
-fi
 
 # Create a single tar file containing all directories with timestamp
 # Use _pending suffix during creation to indicate incomplete backup
 timestamp=$(date +%Y-%m-%d_%H-%M-%S)
 tarfile_pending="$outdir/backup_${timestamp}_pending.tar.gz"
 tarfile="$outdir/backup_${timestamp}.tar.gz"
-echo "Backing up ${#valid_dirs[@]} directories to $tarfile_pending..."
-echo "Directories: ${valid_dirs[@]}"
+echo "Backing up ${#directories[@]} directories to $tarfile_pending..."
+echo "Directories: ${directories[@]}"
 
 # Quick compression with gzip -1 for speed
 # Add verbose flag if requested to show progress
@@ -116,7 +108,7 @@ if [[ "$verbose" == "true" ]]; then
 fi
 # tar exit codes: 0=success, 1=some files differed (e.g., changed during read), 2=fatal error
 # We accept exit code 1 as it's common for active files to change during backup
-GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${valid_dirs[@]}"
+GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${directories[@]}"
 tar_exit=$?
 if [[ $tar_exit -eq 2 ]]; then
     echo "Error: Fatal error during backup" >&2
