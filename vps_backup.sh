@@ -100,7 +100,7 @@ tarfile="$outdir/backup_${timestamp}.tar.gz"
 echo "Backing up ${#directories[@]} directories to $tarfile_pending..."
 echo "Directories: ${directories[@]}"
 
-# Quick compression with gzip -1 for speed
+# Create compressed tar backup
 # Add verbose flag if requested to show progress
 tar_opts="-czf"
 if [[ "$verbose" == "true" ]]; then
@@ -108,7 +108,7 @@ if [[ "$verbose" == "true" ]]; then
 fi
 # tar exit codes: 0=success, 1=some files differed (e.g., changed during read), 2=fatal error
 # We accept exit code 1 as it's common for active files to change during backup
-GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${directories[@]}"
+sudo tar $tar_opts "$tarfile_pending" "${directories[@]}"
 tar_exit=$?
 if [[ $tar_exit -eq 2 ]]; then
     echo "Error: Fatal error during backup" >&2

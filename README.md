@@ -48,7 +48,7 @@ sudo ./vps_backup.sh --keep-n 3 --outdir /mnt/external/backups /home/user /etc /
 
 - **Output directory**: `/backups/YYYY-MM-DD_HH-MM-SS` (timestamped)
 - **Backup retention**: Keeps the last 2 backups, removes older ones
-- **Compression**: Uses gzip with level 1 (fast compression, larger files)
+- **Compression**: Uses gzip with default compression level (level 6)
 - **Permissions**: Requires sudo to create `/backups` directory and write backups
 
 ## How It Works
