@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # Backup script - creates compressed tar backups of specified directories
-# Usage: vps_backup.sh [--keep-n N] [--outdir DIR] dir1 [dir2 ...]
+# Usage: vps_backup.sh [-v|--verbose] [--keep-n N] [--outdir DIR] dir1 [dir2 ...]
 
 # Check for sudo access early - required for creating /backups and writing to it
 if ! sudo -v; then
@@ -12,10 +12,15 @@ fi
 # Default values
 keep_n=2
 outdir=""
+verbose=false
 
 # Parse flags
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -v|--verbose)
+            verbose=true
+            shift
+            ;;
         --keep-n)
             if [[ -z "$2" ]] || [[ "$2" =~ ^- ]]; then
                 echo "Error: --keep-n requires a numeric argument" >&2
@@ -38,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -*)
             echo "Unknown option: $1" >&2
-            echo "Usage: $0 [--keep-n N] [--outdir DIR] dir1 [dir2 ...]" >&2
+            echo "Usage: $0 [-v|--verbose] [--keep-n N] [--outdir DIR] dir1 [dir2 ...]" >&2
             exit 1
             ;;
         *)
@@ -59,7 +64,7 @@ declare -a directories=("$@")
 # Validate that we have directories to backup
 if [[ ${#directories[@]} -eq 0 ]]; then
     echo "Error: No directories specified for backup" >&2
-    echo "Usage: $0 [--keep-n N] [--outdir DIR] dir1 [dir2 ...]" >&2
+    echo "Usage: $0 [-v|--verbose] [--keep-n N] [--outdir DIR] dir1 [dir2 ...]" >&2
     exit 1
 fi
 
@@ -102,7 +107,12 @@ echo "Backing up ${#valid_dirs[@]} directories to $tarfile..."
 echo "Directories: ${valid_dirs[@]}"
 
 # Quick compression with gzip -1 for speed
-GZIP=-1 sudo tar -czf "$tarfile" "${valid_dirs[@]}" || {
+# Add verbose flag if requested to show progress
+tar_opts="-czf"
+if [[ "$verbose" == "true" ]]; then
+    tar_opts="-cvzf"
+fi
+GZIP=-1 sudo tar $tar_opts "$tarfile" "${valid_dirs[@]}" || {
     echo "Error: Failed to create backup" >&2
     exit 1
 }
