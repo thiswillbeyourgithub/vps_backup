@@ -101,9 +101,11 @@ if [[ ${#valid_dirs[@]} -eq 0 ]]; then
 fi
 
 # Create a single tar file containing all directories with timestamp
+# Use _pending suffix during creation to indicate incomplete backup
 timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+tarfile_pending="$outdir/backup_${timestamp}_pending.tar.gz"
 tarfile="$outdir/backup_${timestamp}.tar.gz"
-echo "Backing up ${#valid_dirs[@]} directories to $tarfile..."
+echo "Backing up ${#valid_dirs[@]} directories to $tarfile_pending..."
 echo "Directories: ${valid_dirs[@]}"
 
 # Quick compression with gzip -1 for speed
@@ -112,8 +114,15 @@ tar_opts="-czf"
 if [[ "$verbose" == "true" ]]; then
     tar_opts="-cvzf"
 fi
-GZIP=-1 sudo tar $tar_opts "$tarfile" "${valid_dirs[@]}" || {
+GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${valid_dirs[@]}" || {
     echo "Error: Failed to create backup" >&2
+    exit 1
+}
+
+# Rename to remove _pending suffix on successful completion
+echo "Finalizing backup..."
+sudo mv "$tarfile_pending" "$tarfile" || {
+    echo "Error: Failed to finalize backup (rename from pending)" >&2
     exit 1
 }
 
