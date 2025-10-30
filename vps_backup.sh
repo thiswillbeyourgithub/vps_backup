@@ -132,10 +132,24 @@ sudo mv "$tarfile_pending" "$tarfile" || {
     exit 1
 }
 
+# Clean up any pending (incomplete) backups first
+echo "Cleaning up any incomplete backups..."
+pending_files=($(sudo find /backups -name '*_pending.tar.gz' 2>/dev/null))
+if [[ ${#pending_files[@]} -gt 0 ]]; then
+    for pending in "${pending_files[@]}"; do
+        echo "Removing incomplete backup: $pending"
+        sudo rm -f "$pending" || {
+            echo "Warning: Failed to remove $pending" >&2
+        }
+    done
+else
+    echo "No incomplete backups found"
+fi
+
 # Clean up old backups - keep only the last n backups in /backups
 # List all directories in /backups (excluding /backups itself), sorted by modification time
 echo "Checking for old backups to clean up..."
-backup_dirs=($(sudo find /backups -maxdepth 1 -type d ! -path /backups -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-))
+backup_dirs=($(sudo find /backups -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-))
 
 if [[ ${#backup_dirs[@]} -gt $keep_n ]]; then
     echo "Found ${#backup_dirs[@]} backups, keeping last $keep_n..."
