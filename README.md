@@ -1,4 +1,4 @@
-# vps_vps_backup.sh
+# vps_backup.sh
 
 A quick and dirty backup script for saving my VPS. Creates compressed tar backups of specified directories with automatic rotation to save disk space.
 
