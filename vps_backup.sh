@@ -114,10 +114,16 @@ tar_opts="-czf"
 if [[ "$verbose" == "true" ]]; then
     tar_opts="-cvzf"
 fi
-GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${valid_dirs[@]}" || {
-    echo "Error: Failed to create backup" >&2
+# tar exit codes: 0=success, 1=some files differed (e.g., changed during read), 2=fatal error
+# We accept exit code 1 as it's common for active files to change during backup
+GZIP=-1 sudo tar $tar_opts "$tarfile_pending" "${valid_dirs[@]}"
+tar_exit=$?
+if [[ $tar_exit -eq 2 ]]; then
+    echo "Error: Fatal error during backup" >&2
     exit 1
-}
+elif [[ $tar_exit -eq 1 ]]; then
+    echo "Warning: Some files changed during backup, but backup completed" >&2
+fi
 
 # Rename to remove _pending suffix on successful completion
 echo "Finalizing backup..."
