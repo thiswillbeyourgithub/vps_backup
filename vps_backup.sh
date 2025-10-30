@@ -95,8 +95,9 @@ if [[ ${#valid_dirs[@]} -eq 0 ]]; then
     exit 1
 fi
 
-# Create a single tar file containing all directories
-tarfile="$outdir/backup.tar.gz"
+# Create a single tar file containing all directories with timestamp
+timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+tarfile="$outdir/backup_${timestamp}.tar.gz"
 echo "Backing up ${#valid_dirs[@]} directories to $tarfile..."
 echo "Directories: ${valid_dirs[@]}"
 
