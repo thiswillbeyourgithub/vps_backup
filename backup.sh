@@ -79,23 +79,32 @@ sudo mkdir -p "$outdir" || {
     exit 1
 }
 
-# Backup each directory with quick compression (gzip level 1)
+# Filter out non-existent directories
+valid_dirs=()
 for dir in "${directories[@]}"; do
     if [[ ! -d "$dir" ]]; then
         echo "Warning: Directory '$dir' does not exist, skipping..." >&2
-        continue
+    else
+        valid_dirs+=("$dir")
     fi
-    
-    # Get basename for the tar file
-    dir_basename=$(basename "$dir")
-    tarfile="$outdir/${dir_basename}.tar.gz"
-    
-    echo "Backing up $dir to $tarfile..."
-    # Quick compression with gzip -1 for speed
-    GZIP=-1 sudo tar -czf "$tarfile" -C "$(dirname "$dir")" "$(basename "$dir")" || {
-        echo "Warning: Failed to backup $dir" >&2
-    }
 done
+
+# Check if we have any valid directories to backup
+if [[ ${#valid_dirs[@]} -eq 0 ]]; then
+    echo "Error: No valid directories to backup" >&2
+    exit 1
+fi
+
+# Create a single tar file containing all directories
+tarfile="$outdir/backup.tar.gz"
+echo "Backing up ${#valid_dirs[@]} directories to $tarfile..."
+echo "Directories: ${valid_dirs[@]}"
+
+# Quick compression with gzip -1 for speed
+GZIP=-1 sudo tar -czf "$tarfile" "${valid_dirs[@]}" || {
+    echo "Error: Failed to create backup" >&2
+    exit 1
+}
 
 # Clean up old backups - keep only the last n backups in /backups
 # List all directories in /backups (excluding /backups itself), sorted by modification time
